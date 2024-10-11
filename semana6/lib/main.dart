@@ -1,8 +1,8 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:progreso/screens/splashscreen.dart'; // Importa el archivo splashscreen.dart
-import 'package:progreso/screens/chats.dart'; // Importa el archivo chats.dart
-import 'package:progreso/theme/theme.dart'; // Importa el tema
+import 'package:semana6/screens/splashscreen.dart'; // Importa el archivo splashscreen.dart
+import 'package:semana6/screens/chats.dart'; // Importa el archivo chats.dart
+import 'package:semana6/theme/theme.dart'; // Importa el tema
 
 void main() {
   runApp(const MainApp());
@@ -31,3 +31,4 @@ class HomeScreen extends StatelessWidget {
     return const ChatsScreen(); // Usa el ChatsScreen en lugar de la lista
   }
 }
+
