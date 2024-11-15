@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "197893382417",
+    "firebase_url": "https://uddrodriguez-default-rtdb.firebaseio.com",
+    "project_id": "uddrodriguez",
+    "storage_bucket": "uddrodriguez.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197893382417:android:587028bde1a2b46eeaacb0",
+        "android_client_info": {
+          "package_name": "com.example.semana6"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgBr0nqcxrLYlG56oyU-Q3fj1nntI3VBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
