@@ -1,46 +1,45 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class AppTheme {
+/// El [AppTheme] define los temas claro y oscuro para la app.
+sealed class AppTheme {
   // Tema claro
-  static ThemeData lightTheme = FlexThemeData.light(
-    scheme: FlexScheme.jungle,
-  surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
-  blendLevel: 7,
-  subThemesData: const FlexSubThemesData(
-    blendOnLevel: 10,
-    blendOnColors: false,
-    useTextTheme: true,
-    useM2StyleDividerInM3: true,
-    alignedDropdown: true,
-    useInputDecoratorThemeInDialogs: true,
-  ),
-   visualDensity: FlexColorScheme.comfortablePlatformDensity,
-  useMaterial3: true,
-  swapLegacyOnMaterial3: true,
-  // To use the Playground font, add GoogleFonts package and uncomment
-  // fontFamily: GoogleFonts.notoSans().fontFamily,
+  static ThemeData light = FlexThemeData.light(
+    scheme: FlexScheme.deepPurple,
+    subThemesData: const FlexSubThemesData(
+      interactionEffects: true,
+      tintedDisabledControls: true,
+      useM2StyleDividerInM3: true,
+      inputDecoratorIsFilled: true,
+      inputDecoratorBorderType: FlexInputBorderType.outline,
+      alignedDropdown: true,
+      navigationRailUseIndicator: true,
+      navigationRailLabelType: NavigationRailLabelType.all,
+      appBarBackgroundSchemeColor: SchemeColor.primary, // Fondo AppBar: color primario del tema
+      appBarCenterTitle: true, // Centra los títulos de las AppBars
+    ),
+    visualDensity: FlexColorScheme.comfortablePlatformDensity,
+    cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );
 
   // Tema oscuro
-  static ThemeData darkTheme = FlexThemeData.dark(
-     scheme: FlexScheme.jungle,
-  surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
-  blendLevel: 13,
-  subThemesData: const FlexSubThemesData(
-    blendOnLevel: 20,
-    useTextTheme: true,
-    useM2StyleDividerInM3: true,
-    alignedDropdown: true,
-    useInputDecoratorThemeInDialogs: true,
-  ),
-     visualDensity: FlexColorScheme.comfortablePlatformDensity,
-  useMaterial3: true,
-  swapLegacyOnMaterial3: true,
-  // To use the Playground font, add GoogleFonts package and uncomment
-  // fontFamily: GoogleFonts.notoSans().fontFamily,
+  static ThemeData dark = FlexThemeData.dark(
+    scheme: FlexScheme.deepPurple,
+    subThemesData: const FlexSubThemesData(
+      interactionEffects: true,
+      tintedDisabledControls: true,
+      blendOnColors: true,
+      useM2StyleDividerInM3: true,
+      inputDecoratorIsFilled: true,
+      inputDecoratorBorderType: FlexInputBorderType.outline,
+      alignedDropdown: true,
+      navigationRailUseIndicator: true,
+      navigationRailLabelType: NavigationRailLabelType.all,
+      appBarBackgroundSchemeColor: SchemeColor.primary, // Fondo AppBar: color primario del tema
+      appBarCenterTitle: true, // Centra los títulos de las AppBars
+    ),
+    visualDensity: FlexColorScheme.comfortablePlatformDensity,
+    cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );
-
- 
-  // static ThemeMode themeMode = ThemeMode.system; En caso de querer usar el tema por defecto del teléfono ;)
 }

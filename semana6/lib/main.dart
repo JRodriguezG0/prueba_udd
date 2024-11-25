@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:semana6/screens/home.dart';
 import 'package:semana6/screens/splashscreen.dart';
-import 'package:semana6/theme/theme.dart';
+import 'package:semana6/theme/theme.dart'; // Mantengo tu archivo de tema
 import 'firebase_options.dart';
 
 void main() async {
@@ -19,10 +19,10 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const SplashScreen(),
+      theme: AppTheme.light,   
+      darkTheme: AppTheme.dark, 
+      themeMode: ThemeMode.system,  // Cambia entre el modo claro y oscuro
+      home: const SplashScreen(),  // Pantalla inicial
     );
   }
 }
@@ -32,6 +32,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-return const Mantenedor();
+    return const Mantenedor(); 
   }
 }
