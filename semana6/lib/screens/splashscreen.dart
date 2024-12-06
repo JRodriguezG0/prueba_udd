@@ -5,6 +5,7 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
@@ -23,6 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // Navega a HomeScreen después de la animación
       Future.delayed(const Duration(milliseconds: 500), () {
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(builder: (context) => const Mantenedor()),
         );

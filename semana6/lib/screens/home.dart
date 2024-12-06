@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:semana6/components/appbar.dart';
 import 'package:semana6/components/formulario.dart';
+import 'package:semana6/components/formulario_retiro.dart';
 
 class Mantenedor extends StatefulWidget {
   const Mantenedor({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _MantenedorState createState() => _MantenedorState();
 }
 
@@ -231,8 +234,54 @@ class SearchScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: const Center(
-        child: Text('Pantalla de movimientos'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Historial de Movimientos',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: const [
+                  ListTile(
+                    leading: Icon(Icons.arrow_upward, color: Colors.red),
+                    title: Text('Retiro a cuenta bancaria'),
+                    subtitle: Text('01/12/2024'),
+                    trailing: Text('-\$500.00'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.arrow_downward, color: Colors.green),
+                    title: Text('Depósito recibido'),
+                    subtitle: Text('30/11/2024'),
+                    trailing: Text('+\$1,000.00'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.sync_alt, color: Colors.blue),
+                    title: Text('Transferencia entre cuentas'),
+                    subtitle: Text('28/11/2024'),
+                    trailing: Text('-\$300.00'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.arrow_downward, color: Colors.green),
+                    title: Text('Depósito adicional'),
+                    subtitle: Text('25/11/2024'),
+                    trailing: Text('+\$700.00'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.arrow_upward, color: Colors.red),
+                    title: Text('Pago de servicio'),
+                    subtitle: Text('20/11/2024'),
+                    trailing: Text('-\$200.00'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -251,8 +300,98 @@ class BlogScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: const Center(
-        child: Text('Pantalla de Billetera'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gestión de Billetera',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Saldo disponible:',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const Text(
+              '\$104.602',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Abre el formulario de retiro
+                    showModalBottomSheet(
+                      isScrollControlled: true,
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => FractionallySizedBox(
+                        heightFactor: 0.9,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: FormularioRetiroScreen(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                  ),
+                  child: const Text('Solicitar Retiro'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Acción futura para ver historial
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text('Ver Historial'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Últimos movimientos:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: const [
+                  ListTile(
+                    leading: Icon(Icons.arrow_upward, color: Colors.red),
+                    title: Text('Retiro a cuenta bancaria'),
+                    subtitle: Text('01/12/2024'),
+                    trailing: Text('-\$500.00'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.arrow_downward, color: Colors.green),
+                    title: Text('Depósito recibido'),
+                    subtitle: Text('30/11/2024'),
+                    trailing: Text('+\$1,000.00'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.sync_alt, color: Colors.blue),
+                    title: Text('Transferencia entre cuentas'),
+                    subtitle: Text('28/11/2024'),
+                    trailing: Text('-\$300.00'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -262,6 +401,7 @@ class CallsScreen extends StatefulWidget {
   const CallsScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CallsScreenState createState() => _CallsScreenState();
 }
 

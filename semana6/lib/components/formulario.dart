@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 class FormularioScreen extends StatefulWidget {
   final DocumentSnapshot? usuario;
 
+  // ignore: use_super_parameters
   const FormularioScreen({Key? key, this.usuario}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _FormularioScreenState createState() => _FormularioScreenState();
 }
 
@@ -83,6 +85,7 @@ class _FormularioScreenState extends State<FormularioScreen> {
               .add(usuarioData);
 
           // Mostrar un SnackBar de confirmación de creación
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Inversión creada correctamente')),
           );
@@ -94,13 +97,16 @@ class _FormularioScreenState extends State<FormularioScreen> {
               .update(usuarioData);
 
           // Mostrar un SnackBar de confirmación de edición
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Inversión editada correctamente')),
           );
         }
 
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pop(); // Cerramos el formulario
       } catch (e) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al guardar la inversión')),
         );
