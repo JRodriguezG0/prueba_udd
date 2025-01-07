@@ -1,0 +1,223 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  // ignore: use_super_parameters
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  // ignore: use_super_parameters
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Coordenadas iniciales para el mapa
+  LatLng _center = LatLng(-33.4699, -70.5566); // La Reina
+  LatLng _userLocation = LatLng(-33.4699, -70.5566); // Default, La Reina
+  // ignore: unused_field
+  bool _locationFetched = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserLocation();
+  }
+
+  // Función para obtener la ubicación del usuario
+  Future<void> _getUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Verificar si los servicios de ubicación están habilitados
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // ignore: avoid_print
+      print('Los servicios de ubicación están deshabilitados.');
+      return;
+    }
+
+    // Verificar permisos de ubicación
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        // ignore: avoid_print
+        print('Permiso de ubicación denegado.');
+        return;
+      }
+    }
+
+    // Obtener la ubicación actual
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      _userLocation = LatLng(position.latitude, position.longitude);
+      _locationFetched = true;
+      _center = _userLocation; // Centrar el mapa en la ubicación del usuario
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          // Área principal
+          Expanded(
+            child: Container(
+              color: Colors.grey[300],
+              child: FlutterMap(
+                options: MapOptions(
+                  center: _center,
+                  zoom: 13.0,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    subdomains: ['a', 'b', 'c'],
+                    additionalOptions: {
+                      'attribution': '© OpenStreetMap contributors',
+                    },
+                  ),
+                  // Mostrar la ubicación del usuario
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _userLocation,
+                        builder: (ctx) => Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Panel lateral derecho
+          Container(
+            width: MediaQuery.of(context).size.width * 0.3,
+            color: Colors.red[700],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Botones superiores
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: Icon(Icons.visibility, color: Colors.white),
+                        label: Text(''),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: Icon(Icons.map, color: Colors.white),
+                        label: Text(''),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Botones de rutas
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.yellow,
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                        child: Text(
+                          'Ruta Operaciones',
+                          style: TextStyle(color: Colors.blue[700]),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.yellow,
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                        child: Text(
+                          'Ruta Preventiva',
+                          style: TextStyle(color: Colors.blue[700]),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Footer
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                        child: Text(
+                          'Cerrar Turno',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '15:40\n17 - 12 - 2024',
+                            style: TextStyle(color: Colors.yellow),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.settings, color: Colors.yellow),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
