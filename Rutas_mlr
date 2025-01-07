@@ -30,8 +30,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Coordenadas iniciales para el mapa
-  LatLng _center = LatLng(-33.4699, -70.5566); // La Reina
+  // Coordenadas iniciales para el mapa (La Reina)
+  LatLng _center = LatLng(-33.4699, -70.5566); // Coordenadas de La Reina
   LatLng _userLocation = LatLng(-33.4699, -70.5566); // Default, La Reina
   // ignore: unused_field
   bool _locationFetched = false;
@@ -47,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Verificar si los servicios de ubicación están habilitados
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // ignore: avoid_print
@@ -55,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    // Verificar permisos de ubicación
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -89,8 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.grey[300],
               child: FlutterMap(
                 options: MapOptions(
-                  center: _center,
-                  zoom: 13.0,
+                  center: _center,  // Se centra en La Reina o en la ubicación del usuario
+                  zoom: 15.0,  // Aumento del zoom para mayor detalle en la comuna
                 ),
                 children: [
                   TileLayer(
@@ -122,8 +120,10 @@ class _HomeScreenState extends State<HomeScreen> {
             width: MediaQuery.of(context).size.width * 0.3,
             color: Colors.red[700],
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Agregar espacio en la parte superior para evitar que los botones choquen con la barra de estado
+                SizedBox(height: MediaQuery.of(context).padding.top + 20), // Agregar padding superior
+
                 // Botones superiores
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -132,20 +132,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       ElevatedButton.icon(
                         onPressed: () {},
                         icon: Icon(Icons.visibility, color: Colors.white),
-                        label: Text(''),
+                        label: Text('Visibilidad', style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                           minimumSize: Size(double.infinity, 50),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: () {},
                         icon: Icon(Icons.map, color: Colors.white),
-                        label: Text(''),
+                        label: Text('Ver Mapa', style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                           minimumSize: Size(double.infinity, 50),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ],
@@ -159,29 +167,39 @@ class _HomeScreenState extends State<HomeScreen> {
                       ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                           minimumSize: Size(double.infinity, 50),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: Text(
                           'Ruta Operaciones',
-                          style: TextStyle(color: Colors.blue[700]),
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
+                          backgroundColor: Colors.orange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                           minimumSize: Size(double.infinity, 50),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: Text(
                           'Ruta Preventiva',
-                          style: TextStyle(color: Colors.blue[700]),
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                       ),
                     ],
                   ),
                 ),
+                // Espaciador para empujar los botones hacia abajo
+                Spacer(),
                 // Footer
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -191,14 +209,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                           minimumSize: Size(double.infinity, 50),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: Text(
                           'Cerrar Turno',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -221,3 +243,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+}
