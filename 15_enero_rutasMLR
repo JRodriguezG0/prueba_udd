@@ -1,0 +1,399 @@
+import 'dart:async'; // Para usar Timer
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart'; // Para trabajar con fechas
+import 'package:geocoding/geocoding.dart'; // Para convertir la dirección en coordenadas
+import 'package:latlong2/latlong.dart' as latlong; // Para calcular distancias
+// ignore: unused_import
+import 'configuracion.dart'; // Importa la nueva página de configuración
+
+// ignore: use_key_in_widget_constructors
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  LatLng _center = LatLng(-33.4699, -70.5566); // Coordenadas de La Reina
+  LatLng _userLocation = LatLng(-33.4699, -70.5566); // Default, La Reina
+  // ignore: unused_field
+  bool _locationFetched = false;
+  String _currentTime = '';
+  String _currentDate = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  // Lista para almacenar las coordenadas del recorrido
+  final List<Polyline> _polylines = []; // Lista de polilíneas
+  Polyline? _currentPolyline; // Polilínea actual
+  final List<Map<String, String>> _streetsWithTime = []; // Lista de calles recorridas con tiempo
+
+  // Progreso basado en distancia
+  final double _totalDistanceGoal = 10.0; // Meta en kilómetros
+  double _currentDistance = 0.0; // Distancia recorrida actual en kilómetros
+  LatLng? _lastPosition; // Última posición registrada
+
+  // Modo activo
+  String? _activeMode; // "Operaciones" o "Preventiva" o null
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserLocation();
+    _startClock();
+    _trackUserLocation(); // Iniciar el seguimiento del usuario
+  }
+
+  Future<void> _getUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // ignore: avoid_print
+      print('Los servicios de ubicación están deshabilitados.');
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        // ignore: avoid_print
+        print('Permiso de ubicación denegado.');
+        return;
+      }
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      _userLocation = LatLng(position.latitude, position.longitude);
+      _center = _userLocation;
+      _locationFetched = true;
+      _lastPosition = _userLocation; // Inicializar la última posición
+    });
+  }
+
+  void _trackUserLocation() {
+    Geolocator.getPositionStream(locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10, // Actualizar si el usuario se mueve más de 10 metros
+    )).listen((Position position) {
+      if (_activeMode == null) return; // No hacer nada si no hay un modo activo
+
+      LatLng currentPosition = LatLng(position.latitude, position.longitude);
+
+      if (_lastPosition != null) {
+        // Calcular la distancia recorrida desde la última posición
+        // ignore: prefer_const_constructors
+        final distance = latlong.Distance();
+        _currentDistance += distance.as(
+          latlong.LengthUnit.Kilometer,
+          latlong.LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
+          latlong.LatLng(currentPosition.latitude, currentPosition.longitude),
+        );
+      }
+
+      _lastPosition = currentPosition; // Actualizar la última posición
+
+      setState(() {
+        _userLocation = currentPosition;
+        _currentPolyline?.points.add(_userLocation); // Actualizar la polilínea actual
+        _saveStreetAndTime(_userLocation); // Guardar calle y tiempo
+      });
+    });
+  }
+
+  void _getCurrentTime() {
+    DateTime now = DateTime.now().toUtc().add(const Duration(hours: -3)); // Hora de Chile
+    setState(() {
+      _currentTime = DateFormat('HH:mm:ss').format(now);
+      _currentDate = DateFormat('dd - MM - yyyy').format(now);
+    });
+  }
+
+  void _startClock() {
+    Timer.periodic(const Duration(seconds: 1), (Timer t) => _getCurrentTime());
+  }
+
+  void _startNewPolyline(Color color, String mode) {
+    if (_activeMode != null && _activeMode != mode) {
+      // Mostrar alerta si se cambia de modo
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Cambio de Modo"),
+          content: Text("Estás cambiando al modo $mode."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Aceptar"),
+            ),
+          ],
+        ),
+      );
+    } else if (_activeMode == null) {
+      // Mostrar alerta si se inicia un nuevo modo
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Inicio de Modo"),
+          content: Text("Estás iniciando el modo $mode."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Aceptar"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    _currentPolyline = Polyline(points: [], strokeWidth: 4.0, color: color);
+    setState(() {
+      _polylines.add(_currentPolyline!);
+      _activeMode = mode; // Actualizar el modo activo
+    });
+  }
+
+  Future<void> _saveStreetAndTime(LatLng point) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        point.latitude,
+        point.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        String street = placemarks[0].street ?? "Calle desconocida";
+        String time = "$_currentDate $_currentTime";
+        _streetsWithTime.add({"street": street, "time": time});
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print("Error al obtener la calle: $e");
+    }
+  }
+
+  Future<void> _searchDestination() async {
+    String address = _searchController.text;
+    if (address.isEmpty) {
+      // ignore: avoid_print
+      print("Por favor, introduce una dirección.");
+      return;
+    }
+
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        setState(() {
+          _center = LatLng(locations[0].latitude, locations[0].longitude);
+          _userLocation = _center; // Actualizamos la ubicación del usuario
+        });
+      } else {
+        // ignore: avoid_print
+        print("Dirección no encontrada.");
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print("Error al buscar la dirección: $e");
+    }
+  }
+
+  Future<void> _showSummary() async {
+    double progress = (_currentDistance / _totalDistanceGoal).clamp(0, 1);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Resumen del recorrido"),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ..._streetsWithTime.map((entry) {
+                return Text("${entry['street']} - ${entry['time']}");
+              }).toList(),
+              const SizedBox(height: 20),
+              LinearProgressIndicator(value: progress),
+              Text(
+                  // ignore: unnecessary_brace_in_string_interps
+                  "${(progress * 100).toStringAsFixed(1)}% completado (${_currentDistance.toStringAsFixed(2)} km / ${_totalDistanceGoal} km)")
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cerrar"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double progress = (_currentDistance / _totalDistanceGoal).clamp(0, 1);
+
+    return Scaffold(
+      body: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: FlutterMap(
+              options: MapOptions(
+                center: _center,
+                zoom: 15.0,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: const ['a', 'b', 'c'],
+                ),
+                PolylineLayer(
+                  polylines: _polylines, // Mostrar todas las polilíneas
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _userLocation,
+                      builder: (ctx) => const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 40,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: const Color(0xFF285D72),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar destino',
+                      hintStyle: const TextStyle(color: Color.fromARGB(255, 67, 67, 67)),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.search, color: Color(0xFF285D72)),
+                        onPressed: _searchDestination,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    // ignore: avoid_print
+                    onPressed: () => print('Visibilidad'),
+                    icon: const Icon(Icons.visibility, color: Color(0xFF285D72)),
+                    label: const Text('Visibilidad', style: TextStyle(color: Color(0xFF285D72))),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4D958),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    // ignore: avoid_print
+                    onPressed: () => print('Ver Mapa'),
+                    icon: const Icon(Icons.map, color: Color(0xFF285D72)),
+                    label: const Text('Ver Mapa', style: TextStyle(color: Color(0xFF285D72))),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4D958),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => _startNewPolyline(Colors.red, "Operaciones"),
+                    icon: const Icon(Icons.visibility, color: Colors.white),
+                    label: const Text('Ruta Operaciones', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB33244),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => _startNewPolyline(Colors.cyan, "Preventiva"),
+                    icon: const Icon(Icons.map, color: Colors.white),
+                    label: const Text('Ruta Preventiva', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF56AFCF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  const Spacer(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 10,
+                        backgroundColor: Colors.grey[300],
+                        color: const Color(0xFFD4D958),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          // ignore: unnecessary_brace_in_string_interps
+                          "${(progress * 100).toStringAsFixed(1)}% completado (${_currentDistance.toStringAsFixed(2)} km / ${_totalDistanceGoal} km)",
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _showSummary,
+                    icon: const Icon(Icons.exit_to_app, color: Color(0xFF285D72)),
+                    label: const Text('Cerrar Turno', style: TextStyle(color: Color(0xFF285D72))),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4D958),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
